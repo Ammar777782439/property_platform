@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from datetime import date, timedelta
 import uuid
+import builtins
 
 
 class Offers(models.Model):
@@ -27,7 +28,7 @@ class Offers(models.Model):
     def __str__(self):
         return f"عرض: {self.code}"
 
-    @property
+    @builtins.property
     def is_valid(self):
         today = date.today()
         return self.is_active and self.start_date <= today <= self.end_date
@@ -104,11 +105,11 @@ class Booking(models.Model):
     def __str__(self):
         return f"حجز {self.user} - {self.property}"
 
-    @property
+    @builtins.property
     def duration_days(self):
         return (self.end_date - self.start_date).days
 
-    @property
+    @builtins.property
     def can_be_cancelled(self):
         cancel_deadline = self.start_date - timedelta(days=1)
         return date.today() <= cancel_deadline and self.status in ['confirmed', 'pending_owner_approval']

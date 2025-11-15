@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ property.name }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div id="gallery" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        {% if property.images.all %}
+          {% for img in property.images.all %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <img src="{{ img.image_url }}" class="d-block w-100 rounded" alt="{{ img.description|default:property.name }}">
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="carousel-item active">
+            <img src="https://placehold.co/800x500?text=Property" class="d-block w-100 rounded" alt="">
+          </div>
+        {% endif %}
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#gallery" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">السابق</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#gallery" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">التالي</span>
+      </button>
+    </div>
+
+    <div class="mt-4">
+      <h3>الوصف</h3>
+      <p class="text-muted">{{ property.description }}</p>
+    </div>
+
+    <div class="mt-4">
+      <h3>المراجعات</h3>
+      {% for r in property.reviews.all %}
+        <div class="border rounded p-3 mb-2">
+          <div class="d-flex justify-content-between">
+            <strong>{{ r.user.get_full_name|default:r.user.username }}</strong>
+            <span class="text-warning">{{ r.rating }} / 5</span>
+          </div>
+          <div class="text-muted small">{{ r.created_at|date:"Y-m-d" }}</div>
+          <div>{{ r.comment }}</div>
+        </div>
+      {% empty %}
+        <p class="text-muted">لا توجد مراجعات بعد.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title mb-3">احجز الآن</h4>
+        <p class="mb-1"><strong>السعر:</strong> {{ property.default_daily_price }} ريال/ليلة</p>
+        <p class="text-muted">المدينة: {{ property.city }} • السعة: {{ property.max_capacity }}</p>
+        <hr>
+        <form method="post" action="{% url 'create_booking' property.property_id %}">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">تاريخ البداية</label>
+              {{ form.start_date }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">تاريخ النهاية</label>
+              {{ form.end_date }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">كود الخصم (اختياري)</label>
+              {{ form.offer_code }}
+            </div>
+            <div class="col-12">
+              {% if user.is_authenticated %}
+                <button class="btn btn-primary w-100">تأكيد الحجز</button>
+              {% else %}
+                <a class="btn btn-outline-primary w-100" href="{% url 'login' %}?next={{ request.path }}">سجّل دخولك لإتمام الحجز</a>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

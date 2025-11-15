@@ -25,7 +25,7 @@ def property_list(request):
     end = _parse_date(request.GET.get('end', ''))
 
     if q:
-        qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(address__icontains=q))
+        qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(address__icontains=q))
     if city:
         qs = qs.filter(city__icontains=city)
     if guests:
@@ -62,7 +62,10 @@ def property_detail(request, property_id):
         Property.objects.select_related('owner').prefetch_related('images', 'reviews__user'),
         pk=property_id
     )
+    # Import locally to avoid import cycles
+    from bookings.forms import BookingForm
     context = {
         'property': prop,
+        'form': BookingForm(),
     }
     return render(request, 'properties/detail.html', context)
