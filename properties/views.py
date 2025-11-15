@@ -14,7 +14,7 @@ def _parse_date(value):
 
 
 def property_list(request):
-    qs = Property.objects.select_related('owner').prefetch_related('amenities', 'images')
+    qs = Property.objects.select_related('owner').prefetch_related('images')
 
     q = request.GET.get('q')
     city = request.GET.get('city')
@@ -47,9 +47,9 @@ def property_list(request):
         overlap_bookings = Booking.objects.filter(
             start_date__lt=end,
             end_date__gt=start,
-            status__in=['pending', 'confirmed'],
+            status__in=['pending_owner_approval', 'confirmed'],
         ).values_list('property_id', flat=True)
-        qs = qs.exclude(id__in=set(overlap_bookings))
+        qs = qs.exclude(pk__in=set(overlap_bookings))
 
     context = {
         'properties': qs,
@@ -57,8 +57,11 @@ def property_list(request):
     return render(request, 'properties/list.html', context)
 
 
-def property_detail(request, slug):
-    prop = get_object_or_404(Property.objects.select_related('owner').prefetch_related('amenities', 'images', 'reviews__user'), slug=slug)
+def property_detail(request, property_id):
+    prop = get_object_or_404(
+        Property.objects.select_related('owner').prefetch_related('amenities', 'images', 'reviews__user'),
+        pk=property_id
+    )
     context = {
         'property': prop,
     }
