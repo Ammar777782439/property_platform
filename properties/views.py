@@ -30,17 +30,17 @@ def property_list(request):
         qs = qs.filter(city__icontains=city)
     if guests:
         try:
-            qs = qs.filter(capacity__gte=int(guests))
+            qs = qs.filter(max_capacity__gte=int(guests))
         except ValueError:
             pass
     if price_min:
         try:
-            qs = qs.filter(price_per_night__gte=float(price_min))
+            qs = qs.filter(default_daily_price__gte=float(price_min))
         except ValueError:
             pass
     if price_max:
         try:
-            qs = qs.filter(price_per_night__lte=float(price_max))
+            qs = qs.filter(default_daily_price__lte=float(price_max))
         except ValueError:
             pass
     if start and end and start < end:
@@ -59,7 +59,7 @@ def property_list(request):
 
 def property_detail(request, property_id):
     prop = get_object_or_404(
-        Property.objects.select_related('owner').prefetch_related('amenities', 'images', 'reviews__user'),
+        Property.objects.select_related('owner').prefetch_related('images', 'reviews__user'),
         pk=property_id
     )
     context = {
